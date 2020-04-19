@@ -3,39 +3,40 @@
 
 #include <iostream>
 #include <vector>
-//#include <thread>
-//#include <future>
-//Reads the input file(input.txt) and starts the threads
-//Collects the results achieved by the started threads
-//Writes the results in the output.txt-
+#include <fstream>
+#include <thread>
+#include <future>
+#include <string>
 
 
-int Print(std::vector<std::vector<std::pair<int, int>>>& b, std::string X, int i, int j)
+std::string Print(std::vector<std::vector<std::pair<int, int>>>& b, std::string X, int i, int j)
 {
+	std::string returnvalue = "";
 	if (i == 0 || j == 0)
 	{
-		return 0;
+		return returnvalue;
 	}
 	if (b[i][j].first == i - 1 && b[i][j].second == j - 1)
 	{
-		Print(b, X, i - 1, j - 1);
+		returnvalue = returnvalue + Print(b, X, i - 1, j - 1);
+		//X[i] a JÓ ÉRTÉK
+		returnvalue = returnvalue + X[i];
 		//print xi
-		std::cout << X[i];
 	}
 	else
 	{
 		if (b[i][j].first == i - 1 && b[i][j].second == j)
 		{
-			Print(b, X, i - 1, j);
+			returnvalue = returnvalue + Print(b, X, i - 1, j);
 		}
 		else
 		{
-			Print(b, X, i, j-1);
+			returnvalue = returnvalue + Print(b, X, i, j-1);
 		}
 	}
-	return 0;
+	return returnvalue;
 }
-void longestCommonSubstring(std::string X, const int n, std::string Y, const int m)
+std::string longestCommonSubstring(std::string X, const int n, std::string Y, const int m)
 {
 	//Declare c n+1 and m+1 sized because of c[i,j] : 0 <= i <= n && 0 <= j <= m
 	std::vector<std::vector<int>> c(n+1, std::vector<int>(m+1));
@@ -73,19 +74,38 @@ void longestCommonSubstring(std::string X, const int n, std::string Y, const int
 			}
 		}
 	}
-	Print(b, X, n, m);
-	std::cout << std::endl << "_____" << std::endl;
+	return Print(b, X, n, m);
 }
 
 int main()
 {
-	std::string X = "vWjxvfUBMmRDAVV";
-	std::string Y = "dlKBILGZWJAqXzAGFRHZMitzLyOax";
-	std::string Z = "tcZfEPRIETXGEtsHcKwZ";
-	std::string O = "ZzUzRqpVkElpuPuaIsCFXGLeVDYWVOtKcmjRmpjuWUQre";
-	std::string P = "GFRHZMitzLyOaxtcZfWhfQEaktRmE";
-	longestCommonSubstring(X, X.length(), Y, Y.length());
-	longestCommonSubstring(X, X.length(), Z, Z.length());
-	longestCommonSubstring(X, X.length(), O, O.length());
-	longestCommonSubstring(X, X.length(), P, P.length());
+	//Read inputs
+	int linenumber;
+	std::string pattern;
+	std::ifstream iFile("input.txt");
+	iFile >> linenumber >> pattern;
+	//start threads
+	std::vector<std::future<std::string>> threads(linenumber);
+	std::string line;
+	std::getline(iFile, line);
+	for (int i = 0; i < linenumber; i++)
+	{
+		std::getline(iFile, line);
+		threads[i] = std::async(std::launch::async, longestCommonSubstring, pattern, pattern.length(), line, line.length());
+	}
+	iFile.close();
+	//Create output file and wait threads
+	std::ofstream oFile("output.txt");
+	if (linenumber == 0)
+	{
+		oFile.close();
+	}
+	else
+	{
+		for (int i = 0; i < linenumber; i++)
+		{
+			oFile << threads[i].get() << std::endl;
+		}
+		oFile.close();
+	}
 }
