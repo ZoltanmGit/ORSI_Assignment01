@@ -7,6 +7,7 @@
 #include <thread>
 #include <future>
 #include <string>
+#include <algorithm>
 
 
 std::string Print(std::vector<std::vector<std::pair<int, int>>>& b, std::string X, int i, int j)
@@ -14,33 +15,35 @@ std::string Print(std::vector<std::vector<std::pair<int, int>>>& b, std::string 
 	std::string returnvalue = "";
 	if (i == 0 || j == 0)
 	{
-		return returnvalue;
+		return "";
 	}
 	if (b[i][j].first == i - 1 && b[i][j].second == j - 1)
 	{
-		returnvalue = returnvalue + Print(b, X, i - 1, j - 1);
-		//X[i] a JÓ ÉRTÉK
-		returnvalue = returnvalue + X[i];
-		//print xi
+		returnvalue = Print(b, X, i - 1, j - 1);
+		if (X[i-1] != '\0')
+		{
+			//-1 to adjust
+			returnvalue = returnvalue + X[i-1];
+		}
 	}
 	else
 	{
 		if (b[i][j].first == i - 1 && b[i][j].second == j)
 		{
-			returnvalue = returnvalue + Print(b, X, i - 1, j);
+			returnvalue = Print(b, X, i - 1, j);
 		}
 		else
 		{
-			returnvalue = returnvalue + Print(b, X, i, j-1);
+			returnvalue = Print(b, X, i, j-1);
 		}
 	}
 	return returnvalue;
 }
-std::string longestCommonSubstring(std::string X, const int n, std::string Y, const int m)
+std::string longestCommonSubstring(std::string X, int n, std::string Y, int m)
 {
 	//Declare c n+1 and m+1 sized because of c[i,j] : 0 <= i <= n && 0 <= j <= m
 	std::vector<std::vector<int>> c(n+1, std::vector<int>(m+1));
-	for (int i = 1; i <= n; i++)
+	for (int i = 0; i <= n; i++)
 	{
 		c[i][0] = 0;
 	}
@@ -52,9 +55,10 @@ std::string longestCommonSubstring(std::string X, const int n, std::string Y, co
 	std::vector<std::vector<std::pair<int,int>>> b(n+1, std::vector<std::pair<int,int>>(m+1));
 	for (int i = 1; i <= n; i++)
 	{
-		for (int j = 1; j <= m; j++)
+		for (int j = 1 ; j <= m; j++)
 		{
-			if (X[i] == Y[j])
+			//-1 to check the first index
+			if (X[i-1] == Y[j-1])
 			{
 				c[i][j] = c[i - 1][j - 1] + 1;
 				b[i][j] = std::make_pair(i-1,j-1);
@@ -74,7 +78,7 @@ std::string longestCommonSubstring(std::string X, const int n, std::string Y, co
 			}
 		}
 	}
-	return Print(b, X, n, m);
+	return  Print(b, X, n, m);
 }
 
 int main()
@@ -82,7 +86,7 @@ int main()
 	//Read inputs
 	int linenumber;
 	std::string pattern;
-	std::ifstream iFile("input.txt");
+	std::ifstream iFile("input01.txt"); //CHANGE BACK
 	iFile >> linenumber >> pattern;
 	//start threads
 	std::vector<std::future<std::string>> threads(linenumber);
@@ -104,8 +108,28 @@ int main()
 	{
 		for (int i = 0; i < linenumber; i++)
 		{
-			oFile << threads[i].get() << std::endl;
+			oFile << threads[i].get();
+			if (i != linenumber - 1)
+			{
+				oFile << std::endl;
+			}
 		}
 		oFile.close();
 	}
+	// TEST01
+	/*std::string X = "vWjxvfUBMmRDAVV";
+	std::string Y = "dlKBILGZWJAqXzAGFRHZMitzLyOax";
+	std::string Z = "tcZfEPRIETXGEtsHcKwZ";
+	std::string O = "ZzUzRqpVkElpuPuaIsCFXGLeVDYWVOtKcmjRmpjuWUQre";
+	std::string P = "GFRHZMitzLyOaxtcZfWhfQEaktRmE";
+	std::cout << longestCommonSubstring(X, X.length(), Y, Y.length()) << std::endl;
+	std::cout << longestCommonSubstring(X, X.length(), Z, Z.length()) << std::endl;
+	std::cout << longestCommonSubstring(X, X.length(), O, O.length()) << std::endl;
+	std::cout << longestCommonSubstring(X, X.length(), P, P.length()) << std::endl;*/
+	// TEST02
+	/*std::string X = "ClearlyEvolutionDoesNotDistributeitsGiftsEqually";
+	std::string Y = "CheersLoveTheCavalrysHere";
+	std::cout << longestCommonSubstring(X, X.length(), Y, Y.length());*/
+
+	
 }
